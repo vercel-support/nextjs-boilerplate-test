@@ -1,0 +1,56 @@
+name: Smoke Test
+
+# Overview
+#   This workflow can be used to make sure that the deployment is working as expected before it is automatically promoted to production.
+#
+# How it Works:
+#   1. When a deployment is ready, Vercel triggers this workflow to run.
+#   2. This workflow will then validate that the deployment is working as expected by checking the staged deployments hero text.
+#   3. If the deployment is working as expected, the workflow will set the commit status to approved.
+#   4. If the deployment is not working as expected, the workflow will set the commit status to failed.
+#
+# Connecting to your project on Vercel:
+#   1. Add the commit status created by this workflow as a required Promotion Requirement.
+
+on:
+  repository_dispatch:
+    types:
+      - 'vercel.deployment.ready'
+
+run-name: Vercel Deployment Event - ${{ github.event.client_payload.project.name }} (${{ github.event.client_payload.state.type }})
+
+jobs:
+  validate-deployment-workflow:
+    runs-on: ubuntu-latest
+    # permissions - only required if org / repo doesn't allow actions to write commit statuses by default
+    permissions:
+      actions: read
+      statuses: write
+
+    steps:
+      - name: Vercel Repository Dispatch Debug
+        uses: vercel/repository-dispatch/actions/debug@v1
+
+      - name: With Commit Status
+        uses: vercel/repository-dispatch/actions/status@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch and validate URL
+        id: result
+        run: |
+          set -e
+          STATUS_CODE=$(curl -s -L -o response.txt -w "%{http_code}" "${{ github.event.client_payload.url }}")
+          echo "status_code=$STATUS_CODE" >> $GITHUB_OUTPUT
+          echo "----- Response content -----"
+          cat response.txt
+          echo "----------------------------"
+          if [ "$STATUS_CODE" -ne 200 ]; then
+            echo "URL did not return 200 OK"
+            exit 1
+          fi
+          if grep -qi "Hello" response.txt; then
+            exit 0
+          else
+            exit 1
+          fi
