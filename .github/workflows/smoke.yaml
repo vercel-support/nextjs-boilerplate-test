@@ -16,6 +16,7 @@ on:
   repository_dispatch:
     types:
       - 'vercel.deployment.ready'
+      - 'vercel.deployment.pending'
 
 run-name: Vercel Deployment Event - ${{ github.event.client_payload.project.name }} (${{ github.event.client_payload.state.type }})
 
