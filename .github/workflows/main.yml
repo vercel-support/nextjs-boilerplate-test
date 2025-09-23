@@ -1,0 +1,20 @@
+name: Vercel Dispatch Test
+
+on:
+  repository_dispatch:
+    types:
+      - 'vercel.deployment.ready'
+jobs:
+  test-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Echo event payload
+        run: |
+          echo "Deployment URL: ${{ github.event.client_payload.url }}"
+          echo "Environment: ${{ github.event.client_payload.environment }}"
+
+      # Simple test against the deployment URL
+      - name: Check deployment health
+        run: |
+          curl -I ${{ github.event.client_payload.url }} || exit 1
