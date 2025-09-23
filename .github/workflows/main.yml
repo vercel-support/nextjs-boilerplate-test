@@ -3,7 +3,15 @@ name: Vercel Dispatch Test
 on:
   repository_dispatch:
     types:
-      - 'vercel.deployment.ready'
+       - 'vercel.deployment.ready'
+       - 'vercel.deployment.success'
+       - 'vercel.deployment.error'
+       - 'vercel.deployment.canceled'
+       - 'vercel.deployment.ignored'
+       - 'vercel.deployment.skipped'
+       - 'vercel.deployment.pending' 
+       - 'vercel.deployment.failed'
+       - 'vercel.deployment.promoted'
 jobs:
   test-deployment:
     runs-on: ubuntu-latest
